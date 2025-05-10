@@ -1,9 +1,8 @@
 // components/HeaderBar.js
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
 
 const HeaderBar = () => {
     const navigation = useNavigation();
@@ -12,7 +11,6 @@ const HeaderBar = () => {
         <View style={styles.topBar}>
             <TouchableOpacity
                 onPress={() => {
-                    Alert.alert('Thông báo', 'Mở menu điều hướng');
                     navigation.openDrawer();
                 }}
             >
@@ -20,9 +18,16 @@ const HeaderBar = () => {
             </TouchableOpacity>
 
             {/* Sửa Text thành View để căn giữa đúng cách */}
-            <View style={styles.logoContainer}>
+            {/* <View style={styles.logoContainer}>
                 <Text style={styles.logo}>VietProShop</Text>
+            </View> */}
+<View style={styles.logoContainer}>
+                <Image
+                    source={require('../../../assets/images/logo_icon2.png')} // Đảm bảo đường dẫn chính xác
+                    style={styles.logo}
+                />
             </View>
+            
         </View>
 
     );
@@ -48,9 +53,9 @@ const styles = StyleSheet.create({
         zIndex: 0, // đảm bảo không đè nút menu
     },
     logo: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
+        width: 200,  // Đặt kích thước logo phù hợp
+        height: 30,  // Tùy chỉnh chiều cao theo logo của bạn
+        resizeMode: 'contain', // Đảm bảo logo không bị kéo giãn
     },
 
 });

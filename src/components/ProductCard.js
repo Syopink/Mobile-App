@@ -1,15 +1,21 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
-const ProductCard = ({ name, price, image, onPress }) => {
+const ProductCard = ({ name, price, isStock, image, onPress }) => {
+  const stockColor = isStock ? 'green' : 'red'; // Tính toán màu trước
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.price}>{price}</Text>
+      <Text style={[styles.stockStatus, { color: stockColor }]}>
+        {isStock ? 'Còn hàng' : 'Hết hàng'}
+      </Text>
       <Text style={styles.name}>{name}</Text>
     </TouchableOpacity>
   );
 };
+
 const styles = StyleSheet.create({
   card: {
     width: 160,            // Set width để card có kích thước cố định
@@ -36,12 +42,14 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 16,          // Đảm bảo giá có kích thước hợp lý
   },
+  stockStatus: {
+    fontWeight: '700',
+  },
   name: {
     color: '#555',
     fontSize: 14,
     textAlign: 'center',
   },
 });
-
 
 export default ProductCard;

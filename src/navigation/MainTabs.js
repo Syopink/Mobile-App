@@ -1,3 +1,4 @@
+// navigation/MainTabs.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeStack from './HomeStack';
@@ -14,23 +15,27 @@ const MainTabs = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color }) => {
           let iconName;
-          if (route.name === 'Home') iconName = 'home';
-          else if (route.name === 'Search') iconName = 'search';
-          else if (route.name === 'Cart') iconName = 'cart';
-          else if (route.name === 'Profile') iconName = 'person';
+          if (route.name === 'Trang chủ') iconName = 'home';
+          else if (route.name === 'Danh mục') iconName = 'search';
+          else if (route.name === 'Giỏ hàng') iconName = 'cart';
+          else if (route.name === 'Thông tin') iconName = 'person';
           return <Ionicons name={iconName} size={18} color={color} />;
         },
         tabBarActiveTintColor: '#f27c1e',
         tabBarInactiveTintColor: 'gray',
         headerShown: false,
-        tabBarStyle:{
-        }
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Search" component={Search} />
-      <Tab.Screen name="Cart" component={Cart} />
-      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen 
+        name="Trang chủ" 
+        component={HomeStack} 
+        options={{
+          gestureEnabled: false,  // Vô hiệu hóa kéo ngang trong HomeStack
+        }} 
+      />
+      <Tab.Screen name="Danh mục" component={Search} />
+      <Tab.Screen name="Giỏ hàng" component={Cart} />
+      <Tab.Screen name="Thông tin" component={Profile} />
     </Tab.Navigator>
   );
 };

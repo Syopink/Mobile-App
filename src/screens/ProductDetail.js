@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,23 +9,74 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import avt from '../../assets/images/avt_edit.jpg'; 
+import avt from '../../assets/images/avt_edit.jpg';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../redux/slices/cart';
+import { getImageProduct } from '../ultils';
+import { getCommentsProduct, getProduct } from '../services/Api';
+
+import { formatPrice } from '../lib/VndPrice';
 
 const { width } = Dimensions.get('window');
 
 const ProductDetail = ({ route, navigation }) => {
-  const { productName, productPrice, productImage, productBrand } = route.params;
+  const { productId } = route.params;
+  const dispatch = useDispatch();
+  const [product, setProduct] = useState(null);
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await getProduct(productId);
+        setProduct(data.data);
+
+        const commentRes = await getCommentsProduct(productId, {
+          params: { limit: 4 },
+        });
+        setComments(commentRes.data.data.docs);
+      } catch (err) {
+        console.error('Lỗi khi lấy thông tin sản phẩm hoặc bình luận:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAddToCart = () => {
-    console.log('Added to cart');
-    navigation.navigate('MainTabs', { screen: 'Cart' }); // ✅ Sửa ở đây
-  };
+    if (!product || !product.is_stock) {  // Kiểm tra nếu không có sản phẩm hoặc hết hàng
+      alert('Sản phẩm này đã hết hàng!');  // Hiển thị thông báo
+      return;
+    }    
+    dispatch(addToCart({
+      _id: product._id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      qty: 1,
+    }));
+    navigation.navigate('MainTabs', {
+      screen: 'Trang chủ',
+      params: {
+        screen: 'Giỏ hàng',
+      },
+    });  };
+
+  if (!product) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Đang tải...</Text>
+      </View>
+    );
+  }
+
+  const productImageUri = getImageProduct(product.image);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        {/* Top Image + Icons */}
         <View style={styles.topImageContainer}>
-          <Image source={productImage} style={styles.mainImage} />
+          <Image source={{ uri: productImageUri }} style={styles.mainImage} />
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
@@ -34,62 +85,61 @@ const ProductDetail = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Title + Price */}
         <View style={styles.detailHeader}>
-          <View>
-            <Text style={styles.title}>{productName}</Text>
-            <Text style={styles.brand}>{productBrand}</Text>
-          </View>
-          <Text style={styles.price}>{productPrice}</Text>
+          <Text style={styles.title} numberOfLines={2}>{product.name}</Text>
+          <Text style={styles.price}>{formatPrice(product.price)}</Text>
         </View>
 
-        {/* Thumbnails */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbContainer}>
-          {[productImage, productImage, productImage].map((img, index) => (
-            <Image key={index} source={img} style={styles.thumb} />
+          {[product.image, product.image, product.image].map((img, index) => (
+            <Image key={index} source={{ uri: getImageProduct(img) }} style={styles.thumb} />
           ))}
         </ScrollView>
 
-        {/* Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Info</Text>
+          <Text style={styles.sectionTitle}>Thông tin</Text>
           <Text style={styles.sectionText}>
-            The {productName} features a high-quality design and advanced features to meet all your needs.
+            {`Sản phẩm ${product.name} ${product.details || ''}.`}
           </Text>
         </View>
 
-        {/* Delivery & Return */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery and Return</Text>
-          <Text style={styles.bullet}>🚚 Free shipping over $500</Text>
-          <Text style={styles.bullet}>🔁 30 days return policy</Text>
-          <Text style={styles.bullet}>🛡️ 1-year official warranty</Text>
+          <Text style={styles.sectionTitle}>Vận chuyển và Đổi trả</Text>
+          <Text style={styles.bullet}>🚚 {product.accessories}</Text>
+          <Text style={styles.bullet}>🔁 {product.status}</Text>
+          <Text style={styles.bullet}>🛡️ {product.promotion}</Text>
         </View>
 
-        {/* Reviews */}
         <View style={styles.section}>
-  <Text style={styles.sectionTitle}>Reviews</Text>
-  <Text style={styles.stars}>⭐️⭐️⭐️⭐️⭐️</Text>
-
-  {/* Review content */}
-  <Text style={styles.review}>
-    "The phone is fast, the screen is bright and smooth, and the battery life lasts me all day. Definitely worth the upgrade!"
-  </Text>
-
-  {/* Author name and avatar */}
-  <View style={styles.authorContainer}>
-    <Image source={avt} style={styles.authorAvatar} />
-    <Text style={styles.authorName}>Nguyen Gia Huy</Text>
-  </View>
-</View>
+          <Text style={styles.sectionTitle}>Đánh giá</Text>
+          {comments.length === 0 ? (
+            <Text style={styles.sectionText}>Chưa có đánh giá nào.</Text>
+          ) : (
+            comments.map((comment, index) => (
+              <View key={index} style={{ marginBottom: 16 }}>
+                <Text style={styles.stars}>⭐️⭐️⭐️⭐️⭐️</Text>
+                <Text style={styles.review}>{comment.content}</Text>
+                <View style={styles.authorContainer}>
+                  <Image source={avt} style={styles.authorAvatar} />
+                  <Text style={styles.authorName}>{comment.name || 'Ẩn danh'}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
 
-      {/* Add to Cart */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.addToCartBtn} onPress={handleAddToCart}>
-          <Text style={styles.addToCartText}>Add to Cart</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity
+    style={[styles.addToCartBtn, !product.is_stock && { backgroundColor: '#ccc' }]}  // Đổi màu nút nếu hết hàng
+    onPress={handleAddToCart}
+    disabled={!product.is_stock}  // Disable nút nếu hết hàng
+  >
+    <Text style={styles.addToCartText}>
+      {product.is_stock ? 'Thêm vào Giỏ hàng' : 'Hết hàng'}
+    </Text>
+  </TouchableOpacity>
+</View>
     </View>
   );
 };
@@ -101,7 +151,6 @@ const styles = StyleSheet.create({
   mainImage: {
     width: '100%',
     height: 500,
-    padding: 20,
     paddingTop: 50,
     resizeMode: 'contain',
     borderBottomLeftRadius: 20,
@@ -128,14 +177,26 @@ const styles = StyleSheet.create({
   detailHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    gap: 10,
   },
-  title: { fontSize: 22, fontWeight: '700' },
-  price: { fontSize: 20, fontWeight: 'bold', color: '#f27c1e' },
-  brand: { fontSize: 14, color: '#777', marginTop: 4 },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    flex: 1,
+    marginRight: 10,
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#f27c1e',
+    flexShrink: 0,
+    maxWidth: 150,
+  },
   thumbContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -149,16 +210,50 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 10,
   },
-  section: { paddingHorizontal: 20, marginBottom: 20 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 6 },
-  sectionText: { color: '#555', fontSize: 14, lineHeight: 20 },
+  section: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  sectionText: {
+    color: '#555',
+    fontSize: 14,
+    lineHeight: 20,
+  },
   bullet: {
     color: '#333',
     fontSize: 14,
     marginBottom: 4,
   },
-  stars: { fontSize: 16, marginBottom: 4 },
-  review: { color: '#333', fontSize: 14, lineHeight: 20 },
+  stars: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  review: {
+    color: '#333',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  authorAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  authorName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -179,23 +274,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  authorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  authorAvatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 10,
-  },
-  authorName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
-  
 });
 
 export default ProductDetail;

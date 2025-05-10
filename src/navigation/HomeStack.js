@@ -9,8 +9,19 @@ const Stack = createNativeStackNavigator();
 const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeScreen" component={Home} />
-      <Stack.Screen name="ProductDetail" component={ProductDetail} />
+      <Stack.Screen 
+        name="Home" 
+        component={Home} 
+        options={{ gestureEnabled: false }} // Đảm bảo vô hiệu hóa kéo ngang ở đây
+
+      />
+      <Stack.Screen 
+        name="ProductDetail" 
+        component={ProductDetail} 
+        options={{
+          gestureEnabled: false,  // Vô hiệu hóa kéo ngang trong ProductDetail
+        }} 
+      />
     </Stack.Navigator>
   );
 };

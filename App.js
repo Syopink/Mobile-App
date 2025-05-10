@@ -13,29 +13,19 @@ import ProfileScreen from './src/screens/Profile';
 import MainTabs from './src/navigation/MainTabs'; 
 import InfoScreen from './src/screens/Info';
 import CartScreen from './src/screens/Cart';
+import CategoryProducts from './src/screens/CategoryProducts';
 
-
-const Stack = createStackNavigator();
+import { Provider } from 'react-redux';
+import store from './src/redux/store';
+import StackNavigator from './src/navigation/StackNavigator';
 
 const App = () => {
   return (
+    <Provider store={store}>
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="SignUp" component={SignUp} />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="MainTabs" component={MainTabs} />
-        {/* <Stack.Screen name="MainTabs" component={MainDrawer} /> */}
-
-        <Stack.Screen name="ProductDetail" component={ProductDetail} />
-        <Stack.Screen name="Cart" component={CartScreen} />
-        <Stack.Screen name="Info" component={InfoScreen} />
-        <Stack.Screen name="Delivery" component={DeliveryScreen} />
-        <Stack.Screen name="Payment" component={PaymentScreen} />
-        <Stack.Screen name="Summary" component={SummaryScreen} />
-        <Stack.Screen name="Success" component={SuccessScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-      </Stack.Navigator>
+      <StackNavigator/>
     </NavigationContainer>
+    </Provider>
   );
 };
 

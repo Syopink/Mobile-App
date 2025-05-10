@@ -1,20 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import ScreenLayout from '../components/Layout/ScreenLayout';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../redux/slices/cart';
 const SuccessScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  // Xóa giỏ hàng sau khi đặt hàng thành công
+  const handleBackToHome = () => {
+    dispatch(clearCart());
+    navigation.navigate('MainTabs', {
+      screen: 'Trang chủ',
+      params: { screen: 'Home' },
+    });
+  }
+
   return (
     <ScreenLayout>
       <View style={styles.container}>
-      <Ionicons name="checkmark-done-outline" size={100} color="#10B981" style={styles.icon} />
-      <Text style={styles.title}>Order Successful!</Text>
+        <Ionicons name="checkmark-done-outline" size={100} color="#10B981" style={styles.icon} />
+        <Text style={styles.title}>Đặt hàng thành công!</Text>
         <Text style={styles.message}>
-          Thank you for your purchase. You will receive a confirmation email shortly.
+          Cảm ơn bạn đã mua hàng. Bạn sẽ nhận được email xác nhận trong giây lát.
         </Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MainTabs')}>
-          <Text style={styles.buttonText}>Back to Home</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleBackToHome}
+        >
+          <Text style={styles.buttonText}>Quay lại trang chủ</Text>
         </TouchableOpacity>
       </View>
     </ScreenLayout>
@@ -32,16 +47,12 @@ const styles = StyleSheet.create({
   icon: {
     marginBottom: 24,
   },
-  image: {
-    width: 150,
-    height: 150,
-    marginBottom: 24,
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#10B981',
     marginBottom: 16,
+    textAlign: 'center',
   },
   message: {
     fontSize: 16,
